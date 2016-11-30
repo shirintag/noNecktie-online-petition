@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>How to make a petition</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css" >
+</head>
+<body>
+    <div class="cropper">
+        <div class="imgn">
+        </div>
+        <div class="word">
+            <h1>Upetition</h1>
+            <h2>Necktie</h2>
+            <h3>let's </h3>
+            <p>Here I will explain</p>
+        </div>
+    </div>
+
+    <!-- <div class="box">
+    <h1 id="sign">Please sign the petition!</h1>
+    <button type="button" id="ok">OK</button>
+</div> -->
+
+<form method="post">
+    <div id="inp">
+        <input type="text" name="firstname" id="firstname" placeholder="firstname"></iput>
+        <input type="text" name="lastname" id="lastname" placeholder="lastname"></iput>
+        <inut type="text" name="signature" id="signature" placeholder="signature"></iput>
+    </div>
+    <input type="hidden" name="signature" id="hidden-input"></input>
+    <div id="can">
+        <canvas id="canv" width="400" height="400"></canvas>
+    </div>
+    <div id="but">
+        <button type="button" id="clear">Clear</button>
+        <button type="button" id="submitButton">Submit</button>
+    </div>
+</form>
+
+<script src="/js/signature.js"></script>
+</body>
+</html>
