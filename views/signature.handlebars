@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>How to make a petition</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css" >
+</head>
+<body>
+    <div class="cropper">
+        <div class="imgn">
+        </div>
+        <div class="word">
+            <h1>Upetition</h1>
+            <h2>Necktie</h2>
+            <h3>let's </h3>
+            <p>Here I will explain</p>
+        </div>
+    </div>
+
+        <div class="profile">
+            <h1>Thank you for your signature!</h1>
+        </div>
+
+
+    <h1 id='Petitioners'>Here are all Petitioners that sign this petition:</h1>
+    {{#signatures}}
+        <div class="profile">
+            {{firs_name}}
+            {{last_name}}
+            <!-- {{signatures}} -->
+        </div>
+    {{/signatures}}
+
+    <script src="/js/signature.js"></script>
+</body>
+</html>

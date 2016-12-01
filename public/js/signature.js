@@ -24,13 +24,15 @@ function paint(evt) {
     ctx.stroke();
 }
 
-document.getElementById('submitButton').addEventListener('click', function(){
+document.getElementById('ggg').addEventListener('submit', function(e){
     if (draw == false) {
     //     document.getElementsByClassNam('box').style.display="block";
     //     ok.addEventListener(('click', function(){
     //         document.getElementsByClassNam('box').style.display="none";
 
     // }
+        e.preventDefault();
+        //Cancels the event if it is cancelable, without stopping further propagation of the event.
         alert('Pleas sign the petition!');
         return;
     }
@@ -42,4 +44,6 @@ document.getElementById('submitButton').addEventListener('click', function(){
 
 document.getElementById('clear').addEventListener('click', function(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    draw = false;
+    // if you clear signature and submit doesn't submit and ask for sign again
 });

@@ -2,9 +2,9 @@ DROP TABLE IF EXISTS petitioners;
 
 CREATE TABLE petitioners (
     id SERIAL primary key,
-    firs_name VARCHAR(255) not null,
+    first_name VARCHAR(255) not null,
     last_name VARCHAR(255) not null,
-    signatures TEXT not null,
+    signature TEXT not null,
     time  timestamp DEFAULT CURRENT_TIMESTAMP
 );
-INSERT INTO petitioners (firs_name, last_name, signatures) VALUES ('', '', '');
+INSERT INTO petitioners (first_name, last_name, signatures) VALUES ('', '', '');
