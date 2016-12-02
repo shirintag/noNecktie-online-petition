@@ -19,5 +19,12 @@ CREATE TABLE users (
     time  timestamp DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE user_profiles(
+    id SERIAL primary key,
+    user_id INTEGER not null,
+    age INTEGER,
+    city VARCHAR(255),
+    url TEXT
+);
 INSERT INTO petitioners (first_name, last_name, signature) VALUES ('disco', 'doc', 'shdwvfwtg');
 INSERT INTO users (first_name, last_name, signature) VALUES ('disco', 'doc', '@gmail.com', 'password');

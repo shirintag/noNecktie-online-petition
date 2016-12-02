@@ -1,31 +1,5 @@
 var bcrypt = require('bcrypt');
 
-// function hashPassword(plainTextPassword, callback) {
-//     bcrypt.genSalt(function(err, salt) {
-//         if (err) {
-//             return callback(err);
-//         }
-//         console.log(salt);
-//         bcrypt.hash(plainTextPassword, salt, function(err, hash) {
-//             if (err) {
-//                 return callback(err);
-//             }
-//             console.log(hash);
-//             callback(null, hash);
-//         });
-//     });
-// }
-//
-//
-// function checkPassword(textEnteredInLoginForm, hashedPasswordFromDatabase, callback) {
-//     bcrypt.compare(textEnteredInLoginForm, hashedPasswordFromDatabase, function(err, doesMatch) {
-//         if (err) {
-//             return callback(err);
-//         }
-//         console.log(doesMatch);
-//         callback(null, doesMatch);
-//     });
-// }
 
 
 function hashPassword(plainTextPassword) {
@@ -62,3 +36,34 @@ function checkPassword(textEnteredInLoginForm, hashedPasswordFromDatabase) {
 
 module.exports.hashPassword = hashPassword;
 module.exports.checkPassword = checkPassword;
+
+
+
+
+// callback version:
+// function hashPassword(plainTextPassword, callback) {
+//     bcrypt.genSalt(function(err, salt) {
+//         if (err) {
+//             return callback(err);
+//         }
+//         console.log(salt);
+//         bcrypt.hash(plainTextPassword, salt, function(err, hash) {
+//             if (err) {
+//                 return callback(err);
+//             }
+//             console.log(hash);
+//             callback(null, hash);
+//         });
+//     });
+// }
+//
+//
+// function checkPassword(textEnteredInLoginForm, hashedPasswordFromDatabase, callback) {
+//     bcrypt.compare(textEnteredInLoginForm, hashedPasswordFromDatabase, function(err, doesMatch) {
+//         if (err) {
+//             return callback(err);
+//         }
+//         console.log(doesMatch);
+//         callback(null, doesMatch);
+//     });
+// }
