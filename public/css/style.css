@@ -9,7 +9,7 @@ body {
     background-image: url("../img/cravatta.png");
     background-repeat: no-repeat;
     width: 100%;
-    height: 450px;
+    height: 800px;
     overflow: hidden;
 }
 
@@ -27,6 +27,18 @@ div > input {
     margin-bottom: 30px;
     width: 200px;
     height: 50px;
+}
+
+.inputs{
+    text-align: center;
+    margin-right: 30px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    width: 200px;
+    height: 50px;
+}
+.ggg{
+    text-align: center;
 }
 
 #can{
@@ -103,5 +115,17 @@ canvas#canv{
 #Petitioners {
     text-align: center;
     font-size: 25px;
+    color: #003366
+}
+
+#sigImg{
+    text-align: center;
+    color: #003366
+    width: 400px;
+    height: 400px;
+}
+
+#thanks{
+    text-align: center;
     color: #003366
 }

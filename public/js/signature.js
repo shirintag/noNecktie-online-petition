@@ -24,7 +24,7 @@ function paint(evt) {
     ctx.stroke();
 }
 
-document.getElementById('ggg').addEventListener('submit', function(e){
+document.getElementsByClassNam('ggg').addEventListener('submit', function(e){
     if (draw == false) {
     //     document.getElementsByClassNam('box').style.display="block";
     //     ok.addEventListener(('click', function(){
