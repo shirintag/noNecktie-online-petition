@@ -43,7 +43,7 @@ app.post('/register', function(req, res) {
           [req.body.firstname, req.body.lastname, req.body.email, hash]).then(function(result){
               req.session.user = {
                   email :req.body.email,
-                  firstname : req.body.firstname,
+                  name : req.body.firstname + ' ' + req.body.lastname,
                   id : result.rows[0].id
               };
 
@@ -54,28 +54,27 @@ app.post('/register', function(req, res) {
         }).catch(function(err){
             console.log(err);
             res.render('register', {
-                layout : 'layout'
+                layout : 'layout',
+                error : 'User with this email already exists!'
             });
         });
     }
 });
 
-// app.get('/register/optional', function(req, res) {
-//     res.render('optional-info',{
-//         layout: 'layout',
-//     });
-// });
-//
-// app.post('/register/optional', function(req, res) {
-//     if () {
-//
-//         }).catch(function(err){
-//             console.log(err);
-//
-//             });
-//         });
-//     }
-// });
+app.get('/register/info', function(req, res) {
+    res.render('optional-info',{
+        layout: 'layout',
+    });
+});
+
+app.post('/register/info', function(req, res) {
+    db.query("INSERT INTO user_profiles(user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURNING id",
+    [req.session.user.id, req.body.age, req.body.city, req.body.url]).then(function(result){
+        res.redirect('/petition/profile');
+    }).catch(function(err){
+        console.log(err);
+    });
+});
 
 app.get('/login', function(req, res) {
     res.render('login', {
@@ -85,13 +84,14 @@ app.get('/login', function(req, res) {
 
 app.post('/login', function(req, res) {
     if (req.body.email && req.body.password){
-        db.query("SELECT users.id, petitioners.id as sign_id, password FROM users left join petitioners on petitioners.user_id = users.id WHERE email = $1",
+        db.query("SELECT users.first_name, users.last_name, users.id, petitioners.id as sign_id, password FROM users left join petitioners on petitioners.user_id = users.id WHERE email = $1",
         [req.body.email]).then(function(result){
             checkPassword(req.body.password, result.rows[0].password).then(function(doesMatch){
                 if(doesMatch){
                     console.log('match!');
                     req.session.user = {
-                        email :req.body.email,
+                        name : result.rows[0].first_name + ' ' + result.rows[0].last_name,
+                        email : req.body.email,
                         password : result.rows[0].password,
                         id : result.rows[0].id,
                         signId : result.rows[0].sign_id
@@ -118,25 +118,32 @@ app.get('/logout', function(req, res) {
 
 
 app.get('/petition', function(req, res) {
-    if (req.session.user){
-        res.redirect('/petition');
+    console.log(req.session);
+    if (!req.session.user){
+        res.redirect('/login');
         return;
-    } else {res.render('index', {
-        layout : 'layout'
-    });
+    } else if (req.session.user.signId) {
+        console.log();
+        res.redirect('/petition/profile');
+        return;
+    } else {
+        res.render('index', {
+            name : req.session.user.name,
+            layout : 'layout'
+        });
     }
 });
 
 app.post('/petition', function(req, res) {
-    if (req.session.user){
+    if (!req.session.user){
         res.redirect('/petition');
         return;
     }
 
-    if (req.body.firstname && req.body.lastname && req.body.signature) {
-        db.query("INSERT INTO petitioners(first_name, last_name, signature, user_id) VALUES ($1, $2, $3, $4) RETURNING id",
-        [req.body.firstname, req.body.lastname, req.body.signature, req.session.user.id]).then(function(result){
-            req.session.signatureId = result.rows[0].id;
+    if (req.body.signature) {
+        db.query("INSERT INTO petitioners(signature, user_id) VALUES ($1, $2) RETURNING id",
+        [req.body.signature, req.session.user.id]).then(function(result){
+            req.session.user.signId = result.rows[0].id;
             console.log(result);
             res.redirect('/petition/profile');
         }).catch(function(err){
@@ -156,23 +163,26 @@ app.post('/petition', function(req, res) {
 });
 
 app.get('/petition/profile', function(req, res) {
+    console.log(req.session.user);
     if(!req.session.user) {
         res.redirect('/login');
         return;
     }
 
-    if (!req.session.signatureId){
+    if (!req.session.user.signId){
         res.redirect('/petition');
         return;
     }
     db.query("SELECT * FROM petitioners").then(function(result){
-        return db.query('SELECT * FROM petitioners WHERE id = $1', [req.session.signatureId]).then(function(results2) {
+        return db.query('SELECT * FROM petitioners WHERE id = $1', [req.session.user.signId]).then(function(results2) {
             // console.log(result.rows);
             // console.log(results2.rows);
+            console.log();
             res.render('profile', {
                 layout : 'layout',
                 signature: result.rows.length,
-                sigImg: results2.rows[0].signature
+                sigImg: results2.rows[0].signature,
+                name: req.session.user.name
             });
         });
     }).catch(function(err) {
@@ -185,7 +195,7 @@ app.get('/petition/profile', function(req, res) {
 });
 
 app.get('/petition/profile/signatures', function(req, res) {
-    db.query("SELECT * FROM petitioners").then(function(result){
+    db.query("SELECT * FROM users").then(function(result){
         res.render('signature', {
             layout : 'layout',
             signatures: result.rows

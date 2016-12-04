@@ -6,8 +6,7 @@
 
 <form method="post" id="ggg">
     <div id="inp">
-        <input type="text" name="firstname" id="firstname" placeholder="firstname"></iput>
-        <input type="text" name="lastname" id="lastname" placeholder="lastname"></iput>
+        <div>{{name}}</div>
         <inut type="text" name="signature" id="signature" placeholder="signature"></iput>
     </div>
     <input type="hidden" name="signature" id="hidden-input"></input>
@@ -19,5 +18,9 @@
         <button type="submit" id="submitButton">Submit</button>
     </div>
 </form>
+
+<footer>
+    <div><a href="/logout"> <button type="singup" id="signup"  value="log out">LOG OUT</button></a></div>
+</footer>
 
 <script src="/js/signature.js"></script>

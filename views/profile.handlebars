@@ -1,9 +1,14 @@
-    <h1 id="thanks">Thank you for your signature!</h1>
+    <h1 id="thanks">Thank you for your signature {{name}}!</h1>
     <img id="sigImg" src="{{sigImg}}">
     {{#signature}}
         <div class="profile">
              <a id="all" href="/petition/profile/signatures">See all {{.}} signers!</a>
         </div>
-        <a href="/logout'"> <button type="singup" id="singup"  value="log out">LOG OUT</button></a>
+        <a href="/logout"> <button type="singup" id="signup"  value="log out">LOG OUT</button></a>
     {{/signature}}
-<script src="/js/signature.js"></script>
+
+    <footer>
+        <div><a href="/logout"> <button type="singup" id="signup"  value="log out">LOG OUT</button></a></div>
+    </footer>
+    
+    <script src="/js/signature.js"></script>
