@@ -1,10 +1,23 @@
+<div>
+<p id='login'>If you are already a member, please <a href="/login">log in</a></p>
+</div>
+
 {{#register}}
 <form method="post">
-    <div class="inputs">
-        <input type="text" name="firstname" id="firstname" placeholder="First name"></input>
-        <input type="text" name="lastname" id="lastname" placeholder="Last name"></input>
-        <input type="email" name="email" id="email" placeholder="Email Adress"></input>
-        <input type="password" name="password" id="password" placeholder="Password"></input>
+    <div class="inputs-register">
+    <div>
+        <input type="text" name="firstname" id="firstname" placeholder="First name">
+    </div>
+    <div>
+        <input type="text" name="lastname" id="lastname" placeholder="Last name">
+    </div>
+    <div>
+        <input type="email" name="email" id="email" placeholder="Email Adress">
+    </div>
+    <div>
+        <input type="password" name="password" id="password" placeholder="Password">
+    </div>
+
     </div>
     <div id="but">
         <button type="singup" id="singup">SIGN UP</button>
@@ -13,10 +26,3 @@
 {{/register}}
 
 <div>{{error}}</div>
-<div>
-<p>If you are already a member, please <a href="/login">log in</a></p>
-</div>
-
-<footer>
-    <div><a href="/logout"> <button type="singup" id="signup"  value="log out">LOG OUT</button></a></div>
-</footer>

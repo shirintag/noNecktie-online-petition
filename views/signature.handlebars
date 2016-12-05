@@ -4,10 +4,13 @@
         <div class="profile">
             {{first_name}}
             {{last_name}}
+            <a href="/petition/profile/signatures/{{city}}">{{city}}</a>
+            {{age}}
+            {{url}}
         </div>
     {{/signatures}}
     <script src="/js/signature.js"></script>
 
     <footer>
-        <div><a href="/logout"> <button type="singup" id="signup"  value="log out">LOG OUT</button></a></div>
+        <div><a href="/logout"> <button type="singup" id="logout"  value="log out">LOG OUT</button></a></div>
     </footer>
