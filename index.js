@@ -12,29 +12,61 @@ var cookieSession = require('cookie-session');
 var checkPass = require('./checkPass');
 var hashPassword = checkPass.hashPassword;
 var checkPassword = checkPass.checkPassword;
-// var csurf = require('csurf');
-// var csrfProtection = csrf({ cookie: true })
+var csrf = require('csurf');
+var csrfProtection = csrf({ cookie: true });
 
 app.use(cookieSession({
     secret: 'a really hard to guess secret',
     maxAge: 1000 * 60 * 60 * 24 * 14
 }));
 app.use(cookieParser());
-// app.use(csrfProtection);
 app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: false}));
 app.engine('handlebars', hb());
 app.set('view engine', 'handlebars');
+app.use(csrfProtection);
 
-app.get('/register', function(req, res) {
+app.use(function(req, res, next) {
+    if (req.url != '/register' && req.url != '/login') {
+        if (!req.session.user) {
+            res.redirect('/register');
+        } else {
+            next();
+        }
+    } else {
+        next();
+    }
+});
+
+// function requireSigned(req, res, next) {
+//
+// }
+//
+// function requireNotSigned(req, res, next) {
+//
+// }
+
+function requireNotLoggedIn(req, res, next) {
+    if (req.session.user) {
+        res.redirect('/petition');
+    } else {
+        next();
+    }
+}
+
+app.use(function(err, req, res, next){
+    console.log(err);
+    console.log(req.body);
+});
+
+app.get('/register', requireNotLoggedIn, function(req, res) {
     res.render('register',{
         layout: 'layout',
-        // csrfToken: req.csrfToken(),
-        register : 'register'
+        csrfToken: req.csrfToken()
     });
 });
 
-app.post('/register', function(req, res) {
+app.post('/register', requireNotLoggedIn, function(req, res) {
     if (req.body.firstname && req.body.lastname && req.body.email && req.body.password) {
         hashPassword(req.body.password).then(function(hash){
             return db.query("INSERT INTO users(first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
@@ -53,34 +85,21 @@ app.post('/register', function(req, res) {
             console.log(err);
             res.render('register', {
                 layout : 'layout',
+                csrfToken: req.csrfToken(),
                 error : 'User with this email already exists!'
             });
         });
     }
 });
 
-app.get('/register/info', function(req, res) {
-    res.render('optional-info',{
-        layout: 'layout',
-    });
-});
-
-app.post('/register/info', function(req, res) {
-    db.query("INSERT INTO user_profiles(user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURNING id",
-    [req.session.user.id, req.body.age, req.body.city, req.body.url]).then(function(result){
-        res.redirect('/petition');
-    }).catch(function(err){
-        console.log(err);
-    });
-});
-
-app.get('/login', function(req, res) {
+app.get('/login', requireNotLoggedIn, function(req, res) {
     res.render('login', {
-        layout : 'layout'
+        layout : 'layout',
+        csrfToken: req.csrfToken()
     });
 });
 
-app.post('/login', function(req, res) {
+app.post('/login', requireNotLoggedIn, function(req, res) {
     if (req.body.email && req.body.password){
         db.query("SELECT users.first_name, users.last_name, users.id, petitioners.id as sign_id, password FROM users LEFT JOIN petitioners ON petitioners.user_id = users.id WHERE email = $1",
         [req.body.email]).then(function(result){
@@ -100,6 +119,7 @@ app.post('/login', function(req, res) {
                     console.log('No match');
                     res.render('login', {
                         layout : 'layout',
+                        csrfToken: req.csrfToken()
                     });
                 }
             });
@@ -114,6 +134,21 @@ app.get('/logout', function(req, res) {
     res.redirect('/login');
 });
 
+app.get('/register/info', function(req, res) {
+    res.render('optional-info',{
+        layout: 'layout',
+        csrfToken: req.csrfToken()
+    });
+});
+
+app.post('/register/info', function(req, res) {
+    db.query("INSERT INTO user_profiles(user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURNING id",
+    [req.session.user.id, req.body.age || null, req.body.city, req.body.url]).then(function(result){
+        res.redirect('/petition');
+    }).catch(function(err){
+        console.log(err);
+    });
+});
 
 app.get('/petition', function(req, res) {
     console.log(req.session);
@@ -126,7 +161,8 @@ app.get('/petition', function(req, res) {
     } else {
         res.render('index', {
             name : req.session.user.name,
-            layout : 'layout'
+            layout : 'layout',
+            csrfToken: req.csrfToken()
         });
     }
 });
@@ -147,6 +183,7 @@ app.post('/petition', function(req, res) {
             console.log(err);
             res.render('error', {
                 layout : 'layout',
+                csrfToken: req.csrfToken(),
                 error: true
             });
         });
@@ -154,6 +191,7 @@ app.post('/petition', function(req, res) {
     } else {
         res.render('error', {
             layout : 'layout',
+            csrfToken: req.csrfToken(),
             error: true
         });
     }
@@ -176,6 +214,7 @@ app.get('/petition/profile', function(req, res) {
             // console.log(results2.rows);
             res.render('profile', {
                 layout : 'layout',
+                csrfToken: req.csrfToken(),
                 signature: result.rows.length,
                 sigImg: results2.rows[0].signature,
                 name: req.session.user.name
@@ -185,16 +224,19 @@ app.get('/petition/profile', function(req, res) {
         console.log(err);
         res.render('error', {
             layout : 'layout',
+            csrfToken: req.csrfToken(),
             err: true
         });
     });
 });
 
 app.get('/petition/profile/signatures', function(req, res) {
-    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id").then(function(result){
+    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id")
+    .then(function(result){
         console.log(result.rows);
         res.render('signature', {
             layout : 'layout',
+            csrfToken: req.csrfToken(),
             signatures: result.rows
         });
     });
@@ -202,10 +244,12 @@ app.get('/petition/profile/signatures', function(req, res) {
 
 app.get('/petition/profile/signatures/:city', function(req, res) {
     var city = req.params.city;
-    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id WHERE city =$1 ", [city])
+    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id WHERE city =$1 ",
+    [city])
     .then(function(result){
         res.render('signature', {
             layout : 'layout',
+            csrfToken: req.csrfToken(),
             signatures: result.rows,
             city : req.body.city
         });
@@ -215,16 +259,29 @@ app.get('/petition/profile/signatures/:city', function(req, res) {
 app.get('/petition/error', function(req, res) {
     res.render('error', {
         layout : 'layout',
+        csrfToken: req.csrfToken(),
         error: true
     });
 });
 
-app.get('/petition/profile/edit', function(req, res) {
+app.post('/petition/delete', function(req, res){
+    console.log("hey");
+    db.query("DELETE FROM petitioners WHERE id = $1",[req.session.user.signId]).then(function(){
+        req.session.user.signId = null;
+        res.redirect('/petition');
+    }).catch(function(err){
+        console.log(err);
+        res.render('/petition/profile');
+    });
+});
+
+app.get('/profile/edit', function(req, res) {
     db.query("SELECT * FROM users LEFT JOIN user_profiles ON users.id = user_profiles.user_id WHERE users.id = $1",
     [req.session.user.id]).then(function(result){
         console.log(result);
         res.render('edit', {
             layout : 'layout',
+            csrfToken: req.csrfToken(),
             firstname: result.rows[0].first_name,
             lastname: result.rows[0].last_name,
             email: result.rows[0].email,
@@ -234,44 +291,44 @@ app.get('/petition/profile/edit', function(req, res) {
             url: result.rows[0].url
         });
     }).catch(function(err){
-        console.log(req.session.user.id);
+        // console.log(req.session.user.id);
         console.log(err);
     });
 });
 
-app.post('/petition/profile/edit', function(req, res) {
-    if (req.body.firstname || req.body.lastname || req.body.email || req.body.password || req.body.age || req.body.city || req.body.url ) {
-        hashPassword(req.body.password).then(function(hash){
+app.post('/profile/edit',function(req, res) {
+    var usersTablePromis;
+    var profileTablesPromise;
+
+    if (req.body.firstname) {
+        usersTablePromis = hashPassword(req.body.password).then(function(hash){
             return db.query("UPDATE users SET first_name = $1, last_name = $2, email = $3, password = $4 WHERE id = $5",
-            [req.body.firstname || null, req.body.lastname || null, req.body.email || null, hash, req.session.user.id]).then(function(result){
-                db.query("INSERT INTO user_profiles (user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURN id",
-                [req.session.user.id, req.body.age, req.body.city, req.body.url]).then(function(data){
-                    req.session.user = {
-                        firstname: result.rows[0].first_name,
-                        lastname: result.rows[0].last_name,
-                        email: result.rows[0].email,
-                        city: data.rows[0].city,
-                        age: data.rows[0].age,
-                        url: data.rows[0].url
-                    };
-                });
-            });
-        }).catch(function(err) {
-            console.log(err);
-            db.query("UPDATE * FROM SET user_profiles (age, city, url) VALUES ($1, $2, $3)", [req.body.age, req.body.city, req.body.url]).then(function(data){
-                req.session.user = {
-                    city: data.rows[0].city,
-                    age: data.rows[0].age,
-                    url: data.rows[0].url
-                };
-            });
+            [req.body.firstname || null, req.body.lastname || null, req.body.email || null, hash, req.session.user.id]);
         });
-        res.redirect('/petition/profile');
+    } else {
+        usersTablePromis = db.query("UPDATE users SET first_name = $1, last_name = $2, email = $3, WHERE id = $4",
+        [req.body.firstname || null, req.body.lastname || null, req.body.email || null, req.session.user.id]);
     }
 
+    profileTablesPromise = db.query("INSERT INTO user_profiles (user_id, age, city, url)  VALUES ($1, $2, $3, $4)",
+    [req.session.user.id, req.body.age || null, req.body.city, req.body.url]).catch(function(err){
+        return db.query("UPDATE user_profiles SET age = $1, city = $2, url = $3 WHERE user_id = $4",
+        [req.session.user.id, req.body.age || null , req.body.city, req.body.url]);
+    });
+
+    Promise.all([usersTablePromis, profileTablesPromise]).then(function(result){
+        req.session.user.name = req.body.firstname + ' ' + req.body.lastname;
+        req.session.user.email = req.body.email;
+        req.session.user.age = req.body.age;
+        req.session.user.city = req.body.city;
+        req.session.user.url = req.body.url;
+        res.redirect('/petition');
+    }).catch(function(err){
+        console.log(err);
+        res.render('edit');
+    });
 });
 
-
-app.listen(8080, function(req, res) {
+app.listen(8080, function() {
     console.log('!!!!');
 });

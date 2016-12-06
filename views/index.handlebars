@@ -5,13 +5,14 @@
 </div> -->
 
 <form method="post" id="ggg">
+    <input type="hidden" name="_csrf"  value="{{csrfToken}}">
     <div id="inp">
-        <div id='Petitioners'>{{name}}</div>
+        <div id='petitioners'>{{name}}</div>
         <inut type="text" name="signature" id="signature" placeholder="signature">
     </div>
     <input type="hidden" name="signature" id="hidden-input">
     <div id="can">
-        <canvas id="canv" width="400" height="400"></canvas>
+        <canvas id="canv" width="400" height="100"></canvas>
     </div>
     <div id="but">
         <button type="button" id="clear">Clear</button>

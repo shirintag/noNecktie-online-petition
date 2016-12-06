@@ -54,7 +54,14 @@ button {
     column-rule-color: white;
     width: 100px;
     height: 30px;
-    background: white;
+    border: 1px #004c66 solid;
+    border-radius: 7px;
+    color: white;
+}
+
+a {
+    text-decoration: none;
+    color: #004c66;
 }
 
 #but {
@@ -114,17 +121,18 @@ canvas#canv{
     color: ##004c66;
 }
 
-#Petitioners {
+#petitioners {
     text-align: center;
     font-size: 25px;
     color: ##004c66;
+    font
 }
 
 #sigImg{
     text-align: center;
-    color: ##004c66
+    color: #004c66;
     width: 400px;
-    height: 400px;
+    height: 100px;
 }
 
 #thanks{
@@ -169,6 +177,8 @@ footer{
 }
 
 #logout {
+    width: 80px;
+    height: 30px;
     float: right;
     background-color: #90c3d4;
 }
@@ -176,10 +186,6 @@ footer{
 .signature {
     color: #004c66;
 
-}
-
-#Petitioners{
-    color: #004c66;
 }
 
 #update{
@@ -192,4 +198,18 @@ footer{
 
 #clear {
     background-color:  #004c66;
+}
+
+#edit{
+    margin-left: 20px;
+    text-align: center;
+}
+
+#delete{
+    margin-left: 20px;
+    text-align: center;
+    background-color:  #004c66;
+    width: 150px;
+    height: 80;
+    border-radius: 5px;
 }

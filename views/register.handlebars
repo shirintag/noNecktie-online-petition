@@ -2,8 +2,9 @@
 <p id='login'>If you are already a member, please <a href="/login">log in</a></p>
 </div>
 
-{{#register}}
 <form method="post">
+    <input type="hidden" name="_csrf"  value="{{csrfToken}}">
+
     <div class="inputs-register">
     <div>
         <input type="text" name="firstname" id="firstname" placeholder="First name">
@@ -23,6 +24,5 @@
         <button type="singup" id="singup">SIGN UP</button>
     </div>
 </form>
-{{/register}}
 
 <div>{{error}}</div>
