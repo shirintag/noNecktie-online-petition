@@ -7,31 +7,29 @@ var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
 // var session = require('express-session');
 // var RedisStore = require('connect-redis')(session);
-// var csurf = require('csurf');
 // var pg = require('pg');
 // var redis = require("redis");
 var checkPass = require('./checkPass');
 var hashPassword = checkPass.hashPassword;
 var checkPassword = checkPass.checkPassword;
-
+// var csurf = require('csurf');
+// var csrfProtection = csrf({ cookie: true })
 
 app.use(cookieSession({
     secret: 'a really hard to guess secret',
     maxAge: 1000 * 60 * 60 * 24 * 14
 }));
-
 app.use(cookieParser());
+// app.use(csrfProtection);
 app.use(express.static('./public'));
-app.use(bodyParser.urlencoded({
-    extended: false
-}));
+app.use(bodyParser.urlencoded({ extended: false}));
 app.engine('handlebars', hb());
 app.set('view engine', 'handlebars');
-
 
 app.get('/register', function(req, res) {
     res.render('register',{
         layout: 'layout',
+        // csrfToken: req.csrfToken(),
         register : 'register'
     });
 });
@@ -222,7 +220,7 @@ app.get('/petition/error', function(req, res) {
 });
 
 app.get('/petition/profile/edit', function(req, res) {
-    db.query("SELECT * FROM users LEFT JOIN user_profiles ON users.id = user_profiles.user_id WHERE user_id = $1",
+    db.query("SELECT * FROM users LEFT JOIN user_profiles ON users.id = user_profiles.user_id WHERE users.id = $1",
     [req.session.user.id]).then(function(result){
         console.log(result);
         res.render('edit', {
@@ -236,6 +234,7 @@ app.get('/petition/profile/edit', function(req, res) {
             url: result.rows[0].url
         });
     }).catch(function(err){
+        console.log(req.session.user.id);
         console.log(err);
     });
 });
@@ -244,19 +243,34 @@ app.post('/petition/profile/edit', function(req, res) {
     if (req.body.firstname || req.body.lastname || req.body.email || req.body.password || req.body.age || req.body.city || req.body.url ) {
         hashPassword(req.body.password).then(function(hash){
             return db.query("UPDATE users SET first_name = $1, last_name = $2, email = $3, password = $4 WHERE id = $5",
-            [req.body.firstname, req.body.lastname, req.body.email, hash, req.session.user.id]).then(function(resutl){
-                db.query("INSERT INTO user_profiles (age, city, url) VALUES ($1, $2, $3)", [req.body.age, req.body.city, req.body.url]).then(function(){
-
-                })
-
-            })
-        db.query("UPDATE * FROM users LEFT JOIN user_profiles ON users.id = user_profiles.user_id WHERE user_id = $1",
-        [req.body.first_name, req.body.last_name, req.body.email, req.body.password, req.body.age, req.body.city, req.body.url, req.session.user]).then(function(resutl){
-
+            [req.body.firstname || null, req.body.lastname || null, req.body.email || null, hash, req.session.user.id]).then(function(result){
+                db.query("INSERT INTO user_profiles (user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURN id",
+                [req.session.user.id, req.body.age, req.body.city, req.body.url]).then(function(data){
+                    req.session.user = {
+                        firstname: result.rows[0].first_name,
+                        lastname: result.rows[0].last_name,
+                        email: result.rows[0].email,
+                        city: data.rows[0].city,
+                        age: data.rows[0].age,
+                        url: data.rows[0].url
+                    };
+                });
+            });
+        }).catch(function(err) {
+            console.log(err);
+            db.query("UPDATE * FROM SET user_profiles (age, city, url) VALUES ($1, $2, $3)", [req.body.age, req.body.city, req.body.url]).then(function(data){
+                req.session.user = {
+                    city: data.rows[0].city,
+                    age: data.rows[0].age,
+                    url: data.rows[0].url
+                };
+            });
         });
-    });
+        res.redirect('/petition/profile');
     }
-}
+
+});
+
 
 app.listen(8080, function(req, res) {
     console.log('!!!!');
