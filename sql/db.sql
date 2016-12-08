@@ -20,7 +20,7 @@ CREATE TABLE users (
 
 CREATE TABLE user_profiles(
     id SERIAL primary key,
-    user_id INTEGER not null,
+    user_id INTEGER UNIQUE not null,
     age INTEGER,
     city VARCHAR(255),
     url TEXT
