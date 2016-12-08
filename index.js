@@ -38,6 +38,17 @@ app.use(function(req, res, next) {
     }
 });
 
+app.use(session({
+    store: new Store({
+        ttl: 3600,
+        host: 'localhost',
+        port: 6379
+    }),
+    resave: false,
+    saveUninitialized: true,
+    secret: 'my super fun secret'
+}));
+
 // function requireSigned(req, res, next) {
 //
 // }
@@ -70,7 +81,8 @@ app.post('/register', requireNotLoggedIn, function(req, res) {
     if (req.body.firstname && req.body.lastname && req.body.email && req.body.password) {
         hashPassword(req.body.password).then(function(hash){
             return db.query("INSERT INTO users(first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
-          [req.body.firstname, req.body.lastname, req.body.email, hash]).then(function(result){
+          [req.body.firstname, req.body.lastname, req.body.email, hash])
+        .then(function(result){
               req.session.user = {
                   email :req.body.email,
                   name : req.body.firstname + ' ' + req.body.lastname,
@@ -143,10 +155,12 @@ app.get('/register/info', function(req, res) {
 
 app.post('/register/info', function(req, res) {
     db.query("INSERT INTO user_profiles(user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURNING id",
-    [req.session.user.id, req.body.age || null, req.body.city, req.body.url]).then(function(result){
+    [req.session.user.id, req.body.age || null, req.body.city, req.body.url])
+    .then(function(result){
         res.redirect('/petition');
     }).catch(function(err){
         console.log(err);
+        res.render('optional-info');
     });
 });
 
@@ -175,7 +189,8 @@ app.post('/petition', function(req, res) {
 
     if (req.body.signature) {
         db.query("INSERT INTO petitioners(signature, user_id) VALUES ($1, $2) RETURNING id",
-        [req.body.signature, req.session.user.id]).then(function(result){
+        [req.body.signature, req.session.user.id])
+        .then(function(result){
             req.session.user.signId = result.rows[0].id;
             console.log(result);
             res.redirect('/petition/signed');
@@ -209,7 +224,8 @@ app.get('/petition/signed', function(req, res) {
         return;
     }
     db.query("SELECT * FROM petitioners").then(function(result){
-        return db.query('SELECT * FROM petitioners WHERE id = $1', [req.session.user.signId]).then(function(results2) {
+        return db.query('SELECT * FROM petitioners WHERE id = $1', [req.session.user.signId])
+        .then(function(results2) {
             // console.log(result.rows);
             // console.log(results2.rows);
             res.render('profile', {
@@ -266,7 +282,8 @@ app.get('/petition/error', function(req, res) {
 
 app.post('/petition/delete', function(req, res){
     console.log("hey");
-    db.query("DELETE FROM petitioners WHERE id = $1",[req.session.user.signId]).then(function(){
+    db.query("DELETE FROM petitioners WHERE id = $1",[req.session.user.signId])
+    .then(function(){
         req.session.user.signId = null;
         res.redirect('/petition');
     }).catch(function(err){
@@ -293,6 +310,7 @@ app.get('/profile/edit', function(req, res) {
     }).catch(function(err){
         // console.log(req.session.user.id);
         console.log(err);
+        res.render('edit');
     });
 });
 
@@ -309,12 +327,16 @@ app.post('/profile/edit',function(req, res) {
         usersTablePromis = db.query("UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE id = $4",
         [req.body.firstname || null, req.body.lastname || null, req.body.email || null, req.session.user.id]);
     }
-    console.log(req.body.age);
+
     profileTablesPromise = db.query("INSERT INTO user_profiles (user_id, age, city, url)  VALUES ($1, $2, $3, $4)",
     [req.session.user.id, req.body.age || null, req.body.city, req.body.url]).catch(function(err){
         return db.query("UPDATE user_profiles SET age = $1, city = $2, url = $3 WHERE user_id = $4",
         [req.body.age || null , req.body.city, req.body.url, req.session.user.id]);
+    }).catch(function(err){
+        console.log(err);
+        res.render('edit');
     });
+});
 
     Promise.all([usersTablePromis, profileTablesPromise]).then(function(result){
         req.session.user.name = req.body.firstname + ' ' + req.body.lastname;
