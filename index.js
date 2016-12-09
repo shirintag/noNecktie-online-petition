@@ -5,10 +5,6 @@ var bodyParser = require('body-parser');
 var db = require('./db');
 var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
-var session = require('express-session');
-var RedisStore = require('connect-redis')(session);
-// var pg = require('pg');
-var redis = require("redis");
 var checkPass = require('./checkPass');
 var hashPassword = checkPass.hashPassword;
 var checkPassword = checkPass.checkPassword;
@@ -19,6 +15,7 @@ app.use(cookieSession({
     secret: 'a really hard to guess secret',
     maxAge: 1000 * 60 * 60 * 24 * 14
 }));
+
 app.use(cookieParser());
 app.use(express.static('./public'));
 app.use(bodyParser.urlencoded({ extended: false}));
@@ -37,25 +34,6 @@ app.use(function(req, res, next) {
         next();
     }
 });
-
-app.use(session({
-    store: new Store({
-        ttl: 3600,
-        host: 'localhost',
-        port: 6379
-    }),
-    resave: false,
-    saveUninitialized: true,
-    secret: 'my super fun secret'
-}));
-
-// function requireSigned(req, res, next) {
-//
-// }
-//
-// function requireNotSigned(req, res, next) {
-//
-// }
 
 function requireNotLoggedIn(req, res, next) {
     if (req.session.user) {
@@ -81,18 +59,18 @@ app.post('/register', requireNotLoggedIn, function(req, res) {
     if (req.body.firstname && req.body.lastname && req.body.email && req.body.password) {
         hashPassword(req.body.password).then(function(hash){
             return db.query("INSERT INTO users(first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
-          [req.body.firstname, req.body.lastname, req.body.email, hash])
-        .then(function(result){
-              req.session.user = {
-                  email :req.body.email,
-                  name : req.body.firstname + ' ' + req.body.lastname,
-                  id : result.rows[0].id
-              };
+            [req.body.firstname, req.body.lastname, req.body.email, hash])
+            .then(function(result){
+                req.session.user = {
+                    email :req.body.email,
+                    name : req.body.firstname + ' ' + req.body.lastname,
+                    id : result.rows[0].id
+                };
 
-              if (req.session.user) {
-                  res.redirect('/register/info');
-              }
-          });
+                if (req.session.user) {
+                    res.redirect('/register/info');
+                }
+            });
         }).catch(function(err){
             console.log(err);
             res.render('register', {
@@ -142,8 +120,9 @@ app.post('/login', requireNotLoggedIn, function(req, res) {
 
 
 app.get('/logout', function(req, res) {
-    req.session = null;
-    res.redirect('/login');
+    req.session.destroy(function(err){
+        res.redirect('/login');
+    });
 });
 
 app.get('/register/info', function(req, res) {
@@ -155,8 +134,7 @@ app.get('/register/info', function(req, res) {
 
 app.post('/register/info', function(req, res) {
     db.query("INSERT INTO user_profiles(user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURNING id",
-    [req.session.user.id, req.body.age || null, req.body.city, req.body.url])
-    .then(function(result){
+    [req.session.user.id, req.body.age || null, req.body.city, req.body.url]).then(function(result){
         res.redirect('/petition');
     }).catch(function(err){
         console.log(err);
@@ -165,7 +143,6 @@ app.post('/register/info', function(req, res) {
 });
 
 app.get('/petition', function(req, res) {
-    console.log(req.session);
     if (!req.session.user){
         res.redirect('/login');
         return;
@@ -261,8 +238,7 @@ app.get('/petition/signed/signatures', function(req, res) {
 app.get('/petition/signed/signatures/:city', function(req, res) {
     var city = req.params.city;
     db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id WHERE city =$1 ",
-    [city])
-    .then(function(result){
+    [city]).then(function(result){
         res.render('signature', {
             layout : 'layout',
             csrfToken: req.csrfToken(),
@@ -282,8 +258,7 @@ app.get('/petition/error', function(req, res) {
 
 app.post('/petition/delete', function(req, res){
     console.log("hey");
-    db.query("DELETE FROM petitioners WHERE id = $1",[req.session.user.signId])
-    .then(function(){
+    db.query("DELETE FROM petitioners WHERE id = $1",[req.session.user.signId]).then(function(){
         req.session.user.signId = null;
         res.redirect('/petition');
     }).catch(function(err){
@@ -336,8 +311,6 @@ app.post('/profile/edit',function(req, res) {
         console.log(err);
         res.render('edit');
     });
-});
-
     Promise.all([usersTablePromis, profileTablesPromise]).then(function(result){
         req.session.user.name = req.body.firstname + ' ' + req.body.lastname;
         req.session.user.email = req.body.email;
