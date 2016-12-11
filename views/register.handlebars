@@ -1,6 +1,4 @@
-<div>
-<p id='login'>If you are already a member, please <a href="/login">log in</a></p>
-</div>
+<p id='login'>If you are already a member, please&nbsp; <a href="/login">login.</a></p>
 
 <form method="post">
     <input type="hidden" name="_csrf"  value="{{csrfToken}}">
@@ -20,9 +18,7 @@
     </div>
 
     </div>
-    <div id="but">
-        <button type="singup" id="singup">SIGN UP</button>
+    <div id="but" class='center'>
+        <button type="submit" id="singup">SIGN UP</button>
     </div>
 </form>
-
-<div>{{error}}</div>

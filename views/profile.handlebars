@@ -1,15 +1,21 @@
-    <h1 id="thanks">Thank you for your signature {{name}}!</h1>
+    <div class="center">
+        <h2 id="thanks">Thank you for your signature {{name}}!</h2>
     <img id="sigImg" src="{{sigImg}}">
     {{#signature}}
         <div class="profile">
              <a id="all" href="/petition/signed/signatures">See all {{.}} signers!</a>
         </div>
-        <a href="/logout"> <button type="singup" id="logout"  value="log out">LOG OUT</button></a>
         <a href="/profile/edit" id="edit">Edit your profile</a>
 
     {{/signature}}
+
     <form method="POST" action="/petition/delete">
         <input type="hidden" name="_csrf"  value="{{csrfToken}}">
-        <button id="delete">Delete your signature</button></form>
+        <button type="submit" id="delete"  value="log out">Delete your signature</button>
+    </form>
+</div>
 
+    <footer>
+        <a href="/logout"> <button type="submit" id="logout"  value="log out">LOG OUT</button></a>
+    </footer>
     <script src="/js/signature.js"></script>

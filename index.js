@@ -35,6 +35,14 @@ app.use(function(req, res, next) {
     }
 });
 
+
+String.prototype.capitalize = function() {
+    return this.split(" ").map(function(word) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(" ");
+};
+
+
 function requireNotLoggedIn(req, res, next) {
     if (req.session.user) {
         res.redirect('/petition');
@@ -56,6 +64,8 @@ app.get('/register', requireNotLoggedIn, function(req, res) {
 });
 
 app.post('/register', requireNotLoggedIn, function(req, res) {
+    req.body.firstname = req.body.firstname.capitalize();
+    req.body.lastname = req.body.lastname.capitalize();
     if (req.body.firstname && req.body.lastname && req.body.email && req.body.password) {
         hashPassword(req.body.password).then(function(hash){
             return db.query("INSERT INTO users(first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
@@ -109,6 +119,7 @@ app.post('/login', requireNotLoggedIn, function(req, res) {
                     console.log('No match');
                     res.render('login', {
                         layout : 'layout',
+                        error : 'The email address or password is invalid.',
                         csrfToken: req.csrfToken()
                     });
                 }
@@ -120,9 +131,8 @@ app.post('/login', requireNotLoggedIn, function(req, res) {
 
 
 app.get('/logout', function(req, res) {
-    req.session.destroy(function(err){
-        res.redirect('/login');
-    });
+    req.session = null;
+    res.redirect('/login');
 });
 
 app.get('/register/info', function(req, res) {
@@ -236,7 +246,7 @@ app.get('/petition/signed/signatures', function(req, res) {
 });
 
 app.get('/petition/signed/signatures/:city', function(req, res) {
-    var city = req.params.city;
+    var city = req.params.city.capitalize();
     db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id WHERE city =$1 ",
     [city]).then(function(result){
         res.render('signature', {
@@ -319,8 +329,20 @@ app.post('/profile/edit',function(req, res) {
         req.session.user.url = req.body.url;
         res.redirect('/petition');
     }).catch(function(err){
-        console.log(err);
-        res.render('edit');
+            console.log(err);
+            res.render('edit', {
+                layout : 'layout',
+                csrfToken: req.csrfToken(),
+                error : 'Please complete all the required fields!',
+                firstname:req.body.first_name,
+                lastname: req.body.last_name,
+                email: req.body.email,
+                password: req.body.password,
+                city: req.body.city,
+                age: req.body.age,
+                url: req.body.url
+        });
+
     });
 });
 

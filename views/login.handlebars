@@ -1,14 +1,8 @@
-<h1>Please log in.</h1>
 
-<form method="post">
+<form method="post" class="inputs-register">
+    <h2 id="thanks">Please login.</h2>
     <input type="hidden" name="_csrf"  value="{{csrfToken}}">
-
-    <div>
         <input type="email" name="email" id="email" placeholder="Email Adress">
         <input type="password" name="password" id="password" placeholder="Password">
-    </div>
-
-    <div>
         <button type="singup" id="singup">LOG IN</button>
-    </div>
 </form>
