@@ -1,0 +1,22 @@
+
+<h2 id='petitioners'>Here are all Petitioners that signed this petition:</h2>
+<div class="signers_table">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>City</th>
+            <th>Webpage</th>
+        </tr>
+        {{#signatures}}
+        <tr>
+            <td>{{first_name}} {{last_name}}</td>
+            <td>{{age}}</td>
+            <td><a href="/petition/signed/signatures/{{city}}">{{city}}</a></td>
+            <td><a href="{{href}}">{{url}}</a></td>
+        </tr>
+        {{/signatures}}
+    </table>
+</div>
+
+{{>footer}}

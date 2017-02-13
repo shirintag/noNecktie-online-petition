@@ -1,8 +1,6 @@
 var canvas = document.getElementById("canv");
 var ctx = canvas.getContext("2d");
 var draw = false;
-// var ok = document.getElementById('ok');
-// var box = document.getElementById('box');
 
 canvas.addEventListener("mousedown", pointerDown, false);
 canvas.addEventListener("mouseup", pointerUp, false);
@@ -24,15 +22,9 @@ function paint(evt) {
     ctx.stroke();
 }
 
-document.getElementById('ggg').addEventListener('submit', function(e){
+document.getElementById('signature').addEventListener('submit', function(e){
     if (draw == false) {
-    //     document.getElementsByClassNam('box').style.display="block";
-    //     ok.addEventListener(('click', function(){
-    //         document.getElementsByClassNam('box').style.display="none";
-
-    // }
         e.preventDefault();
-        //Cancels the event if it is cancelable, without stopping further propagation of the event.
         alert('Pleas sign the petition!');
         return;
     }
@@ -42,8 +34,9 @@ document.getElementById('ggg').addEventListener('submit', function(e){
 
 });
 
+// if you clear signature and submit, doesn't submit and ask for sign again
 document.getElementById('clear').addEventListener('click', function(){
+    console.log();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     draw = false;
-    // if you clear signature and submit doesn't submit and ask for sign again
 });

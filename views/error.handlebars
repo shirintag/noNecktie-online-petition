@@ -1,23 +1,21 @@
-
-    {{#error}}
+{{#error}}
     <div class="err">
         <a herf="">Something went wrong, Please try again!</a>
     </div>
-    {{/error}}
+{{/error}}
 
-    <form method="post">
-        <div id="inp">
-            <div>{{name}}</div>
-            <inut type="text" name="signature" id="signature" placeholder="signature">
-        </div>
-        <input type="hidden" name="signature" id="hidden-input">
-        <div id="can">
-            <canvas id="canv" width="400" height="400"></canvas>
-        </div>
-        <div id="but">
-            <button type="button" id="clear">Clear</button>
-            <button type="button" id="submitButton">Submit</button>
-        </div>
-    </form>
-
-    <script src="/js/signature.js"></script>
+<form method="post">
+    <div id="inp">
+        <div>{{name}}</div>
+        <inut type="text" name="signature" id="signature" placeholder="signature">
+    </div>
+    <input type="hidden" name="signature" id="hidden-input">
+    <div id="can">
+        <canvas id="canv" width="400" height="400"></canvas>
+    </div>
+    <div id="but">
+        <button type="button" id="clear">Clear</button>
+        <button type="button" id="submitButton">Submit</button>
+    </div>
+</form>
+{{>footer}}

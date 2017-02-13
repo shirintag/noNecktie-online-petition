@@ -35,13 +35,9 @@ app.use(function(req, res, next) {
     }
 });
 
-
-String.prototype.capitalize = function() {
-    return this.split(" ").map(function(word) {
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    }).join(" ");
-};
-
+String.prototype.capitalizeFirstLetter = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
 
 function requireNotLoggedIn(req, res, next) {
     if (req.session.user) {
@@ -64,8 +60,8 @@ app.get('/register', requireNotLoggedIn, function(req, res) {
 });
 
 app.post('/register', requireNotLoggedIn, function(req, res) {
-    req.body.firstname = req.body.firstname.capitalize();
-    req.body.lastname = req.body.lastname.capitalize();
+    req.body.firstname = req.body.firstname.capitalizeFirstLetter();
+    req.body.lastname = req.body.lastname.capitalizeFirstLetter();
     if (req.body.firstname && req.body.lastname && req.body.email && req.body.password) {
         hashPassword(req.body.password).then(function(hash){
             return db.query("INSERT INTO users(first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id",
@@ -101,7 +97,8 @@ app.get('/login', requireNotLoggedIn, function(req, res) {
 
 app.post('/login', requireNotLoggedIn, function(req, res) {
     if (req.body.email && req.body.password){
-        db.query("SELECT users.first_name, users.last_name, users.id, petitioners.id as sign_id, password FROM users LEFT JOIN petitioners ON petitioners.user_id = users.id WHERE email = $1",
+        db.query("SELECT users.first_name, users.last_name, users.id, petitioners.id as sign_id, password \
+        FROM users LEFT JOIN petitioners ON petitioners.user_id = users.id WHERE email = $1",
         [req.body.email]).then(function(result){
             checkPassword(req.body.password, result.rows[0].password).then(function(doesMatch){
                 if(doesMatch){
@@ -129,7 +126,6 @@ app.post('/login', requireNotLoggedIn, function(req, res) {
     }
 });
 
-
 app.get('/logout', function(req, res) {
     req.session = null;
     res.redirect('/login');
@@ -144,7 +140,7 @@ app.get('/register/info', function(req, res) {
 
 app.post('/register/info', function(req, res) {
     db.query("INSERT INTO user_profiles(user_id, age, city, url) VALUES ($1, $2, $3, $4) RETURNING id",
-    [req.session.user.id, req.body.age || null, req.body.city, req.body.url]).then(function(result){
+    [req.session.user.id, req.body.age || null, req.body.city.capitalizeFirstLetter(), req.body.url]).then(function(result){
         res.redirect('/petition');
     }).catch(function(err){
         console.log(err);
@@ -160,7 +156,7 @@ app.get('/petition', function(req, res) {
         res.redirect('/petition/signed');
         return;
     } else {
-        res.render('index', {
+        res.render('sign', {
             name : req.session.user.name,
             layout : 'layout',
             csrfToken: req.csrfToken()
@@ -233,26 +229,38 @@ app.get('/petition/signed', function(req, res) {
     });
 });
 
+// here we add http to link that they don't have and capitalize the city
+var processRows = function(rows){
+    rows = rows.map(function(row) {
+        row.href = row.url.startsWith("http") ? row.url : "http://" + row.url;
+        row.city = row.city.capitalizeFirstLetter();
+        return row;
+    });
+    return rows;
+};
+
 app.get('/petition/signed/signatures', function(req, res) {
-    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id")
+    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id \
+    LEFT JOIN users ON users.id = petitioners.user_id")
     .then(function(result){
         console.log(result.rows);
-        res.render('signature', {
+        res.render('signatures', {
             layout : 'layout',
             csrfToken: req.csrfToken(),
-            signatures: result.rows
+            signatures: processRows(result.rows)
         });
     });
 });
 
 app.get('/petition/signed/signatures/:city', function(req, res) {
-    var city = req.params.city.capitalize();
-    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id LEFT JOIN users ON users.id = petitioners.user_id WHERE city =$1 ",
+    var city = req.params.city.toLowerCase();
+    db.query("SELECT * FROM petitioners LEFT JOIN user_profiles ON user_profiles.user_id = petitioners.user_id \
+    LEFT JOIN users ON users.id = petitioners.user_id WHERE lower(city) =$1 ",
     [city]).then(function(result){
-        res.render('signature', {
+        res.render('signatures', {
             layout : 'layout',
             csrfToken: req.csrfToken(),
-            signatures: result.rows,
+            signatures: processRows(result.rows),
             city : req.body.city
         });
     });
@@ -267,7 +275,7 @@ app.get('/petition/error', function(req, res) {
 });
 
 app.post('/petition/delete', function(req, res){
-    console.log("hey");
+    console.log("deleted");
     db.query("DELETE FROM petitioners WHERE id = $1",[req.session.user.signId]).then(function(){
         req.session.user.signId = null;
         res.redirect('/petition');
@@ -281,7 +289,8 @@ app.get('/profile/edit', function(req, res) {
     db.query("SELECT * FROM users LEFT JOIN user_profiles ON users.id = user_profiles.user_id WHERE users.id = $1",
     [req.session.user.id]).then(function(result){
         console.log(result);
-        res.render('edit', {
+        //check if the link has http if not add it.
+        res.render('edit-profile', {
             layout : 'layout',
             csrfToken: req.csrfToken(),
             firstname: result.rows[0].first_name,
@@ -295,7 +304,7 @@ app.get('/profile/edit', function(req, res) {
     }).catch(function(err){
         // console.log(req.session.user.id);
         console.log(err);
-        res.render('edit');
+        res.render('edit-profile');
     });
 });
 
@@ -319,7 +328,7 @@ app.post('/profile/edit',function(req, res) {
         [req.body.age || null , req.body.city, req.body.url, req.session.user.id]);
     }).catch(function(err){
         console.log(err);
-        res.render('edit');
+        res.render('edit-profile');
     });
     Promise.all([usersTablePromis, profileTablesPromise]).then(function(result){
         req.session.user.name = req.body.firstname + ' ' + req.body.lastname;
@@ -329,18 +338,18 @@ app.post('/profile/edit',function(req, res) {
         req.session.user.url = req.body.url;
         res.redirect('/petition');
     }).catch(function(err){
-            console.log(err);
-            res.render('edit', {
-                layout : 'layout',
-                csrfToken: req.csrfToken(),
-                error : 'Please complete all the required fields!',
-                firstname:req.body.first_name,
-                lastname: req.body.last_name,
-                email: req.body.email,
-                password: req.body.password,
-                city: req.body.city,
-                age: req.body.age,
-                url: req.body.url
+        console.log(err);
+        res.render('edit-profile', {
+            layout : 'layout',
+            csrfToken: req.csrfToken(),
+            error : 'Please complete all the required fields!',
+            firstname:req.body.first_name,
+            lastname: req.body.last_name,
+            email: req.body.email,
+            password: req.body.password,
+            city: req.body.city,
+            age: req.body.age,
+            url: req.body.url
         });
 
     });

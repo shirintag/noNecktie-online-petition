@@ -1,0 +1,12 @@
+<form method="post" class="inputs">
+    <input type="hidden" name="_csrf"  value="{{csrfToken}}">
+    <input type="text" name="firstname" id="firstname" placeholder="First name" value="{{firstname}}">
+    <input type="text" name="lastname" id="lastname" placeholder="Last name" value="{{lastname}}">
+    <input type="email" name="email" id="email" placeholder="Email Adress" value="{{email}}">
+    <input type="password" name="password" id="password" placeholder="Password">
+    <input type="text" name="age" id="age" placeholder="Age" value="{{age}}">
+    <input type="text" name="city" id="city" placeholder="City" value="{{city}}">
+    <input type="text" name="url" id="url" placeholder="Homepage" value="{{url}}">
+    <button type="submit" id="update">UPDATE</button>
+</form>
+    {{>footer}}

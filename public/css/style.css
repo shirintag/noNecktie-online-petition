@@ -15,7 +15,6 @@ body {
 
 #imgn {
     margin-bottom: 30px;
-    /*background-image: url("../img/cravatta.png");*/
     width: auto;
     height: 400px;
 }
@@ -40,7 +39,7 @@ h2 {
     letter-spacing: 1px;
 }
 
-.inputs-register {
+.inputs {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -56,8 +55,19 @@ input {
     height: 50px;
 }
 
+table, th, td {
+    color
+    background-color: #004c66;
+    border: 1px dotted  white;
+    text-align: left;
+    width: 800px;
+    height: auto;
+    padding: 15px;
+    border-collapse: collapse;
+}
+
 button {
-    background-color:  #004c66;
+    background-color: #004c66;
     margin: 20px;
     column-rule-color: white;
     width: 100px;
@@ -77,6 +87,26 @@ button {
     color: #004c66;
 }
 
+.signers_info{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 10px;
+    margin-right: 10px;
+    font-size: 20px;
+    color: #004c66;
+}
+
+.signers_table{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 10px;
+    margin-right: 10px;
+    font-size: 20px;
+    color: #004c66;
+}
+
 #thanks{
     display: flex;
     justify-content: center;
@@ -84,7 +114,7 @@ button {
     height: auto;
 }
 
-.ggg{
+.signature{
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -92,6 +122,7 @@ button {
 
 a {
     color: #004c66;
+    text-decoration: none;
 }
 
 canvas {
@@ -168,13 +199,14 @@ canvas {
     color: #004c66;
 }
 
-footer {
-    float: right;
-    margin-top: 20px;
-    margin-bottom: 0;
+#footer-container{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
 }
 
-#signup {
+#color-button {
     background-color:  #004c66;
 }
 
@@ -190,7 +222,7 @@ footer {
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 20px;
-    color: #004c66;
+    color: #FF0000;
 }
 
 #login {

@@ -1,7 +1,6 @@
-<form method="post" class="ggg" id="ggg">
+<form method="post" class="signature" id="signature">
     <input type="hidden" name="_csrf"  value="{{csrfToken}}">
     <div id='petitioners'>{{name}}</div>
-    <!-- <input type="text" name="signature" id="signature" placeholder="signature"> -->
     <input type="hidden" name="signature" id="hidden-input">
     <canvas id="canv" width="400" height="100"></canvas>
     <div class="sign">
@@ -9,9 +8,5 @@
         <button type="submit" id="submitButton">Submit</button>
     </div>
 </form>
-
-<footer>
-<a href="/logout"> <button type="submit" id="logout"  value="log out">LOG OUT</button></a>
-</footer>
 
 <script src="/js/signature.js"></script>

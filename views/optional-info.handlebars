@@ -1,14 +1,12 @@
 <h1 id='info'>Now please tell us more about yourself.</h1>
 <form method="post">
     <input type="hidden" name="_csrf"  value="{{csrfToken}}">
-
-    <div class="inputs-register">
+    <div class="inputs">
         <input type="text" name="age" id="age" placeholder="Age">
         <input type="text" name="city" id="city" placeholder="City">
         <input type="text" name="url" id="url" placeholder="Homepage">
-        <button href="/petition" type="submit" id="signup">CONTINUE</button>
+        <button href="/petition" type="submit" id="color-button">CONTINUE</button>
+    </div>
 </form>
 
-<footer>
-    <a href="/logout"> <button type="submit" id="logout"  value="log out">LOG OUT</button></a>
-</footer>
+{{>footer}}

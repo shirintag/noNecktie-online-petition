@@ -1,7 +1,5 @@
 var bcrypt = require('bcrypt');
 
-
-
 function hashPassword(plainTextPassword) {
     return new Promise(function(resolve, reject){
         bcrypt.genSalt(function(err, salt){
@@ -20,7 +18,6 @@ function hashPassword(plainTextPassword) {
     });
 }
 
-
 function checkPassword(textEnteredInLoginForm, hashedPasswordFromDatabase) {
     return new Promise(function(resolve, reject){
         bcrypt.compare(textEnteredInLoginForm, hashedPasswordFromDatabase, function(err, doesMatch) {
@@ -38,9 +35,7 @@ module.exports.hashPassword = hashPassword;
 module.exports.checkPassword = checkPassword;
 
 
-
-
-// callback version:
+// How to use callback for the same function:
 // function hashPassword(plainTextPassword, callback) {
 //     bcrypt.genSalt(function(err, salt) {
 //         if (err) {
@@ -56,7 +51,6 @@ module.exports.checkPassword = checkPassword;
 //         });
 //     });
 // }
-//
 //
 // function checkPassword(textEnteredInLoginForm, hashedPasswordFromDatabase, callback) {
 //     bcrypt.compare(textEnteredInLoginForm, hashedPasswordFromDatabase, function(err, doesMatch) {
